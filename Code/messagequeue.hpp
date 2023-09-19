@@ -1,13 +1,15 @@
+#include <condition_variable>
 #include <mutex>
 #include <queue>
 
 template <typename T> class MessageQueue {
 private:
-  /// Lock that is applied when there are no messages in queue
-  std::recursive_mutex emptylock;
+  /// Lock to manage synchronization between threads internal queue
+  std::mutex mtx;
 
-  /// Lock to manage synchronization between thread and messagequeue
-  std::mutex msglock;
+  /// Condition variable that prevents receiving messages until the queue has a
+  /// message available
+  std::condition_variable cv;
 
   std::queue<T> messages;
 
@@ -17,26 +19,21 @@ public:
 
   /// Receives the next message in the queue. Note: this blocks execution until
   /// a message is available
-  T &receive();
+  T receive();
 };
 
 template <typename T> void MessageQueue<T>::send(const T &val) {
-  this->msglock.unlock();
+  std::lock_guard<std::mutex> lock(this->mtx);
   this->messages.push(val);
-  this->msglock.lock();
+
+  this->cv.notify_one(); // Notify any waiting recievers of available element
 }
 
-template <typename T> T &MessageQueue<T>::receive() {
-  this->emptylock.lock();
+template <typename T> T MessageQueue<T>::receive() {
+  std::unique_lock<std::mutex> lock(this->mtx);
+  cv.wait(lock, [this] { return !messages.empty(); });
 
-  this->msglock.lock();
   T val = messages.back();
   messages.pop();
-  this->msglock.unlock();
-
-  if (!messages.empty()) {
-    this->emptylock.unlock();
-  }
-
   return val;
 }
