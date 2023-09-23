@@ -1,2 +1,5 @@
 compile: 
-	clang++ -g -std=c++14 ./Code/*.cpp -o output
+	c++ -g -std=c++17 ./Code/*.cpp -o output
+
+demo:
+	c++ -g ./Data/Demo/main.cpp -o demo
