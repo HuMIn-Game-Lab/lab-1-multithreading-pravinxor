@@ -1,3 +1,6 @@
+#ifndef SLAVE_HPP
+#define SLAVE_HPP
+
 #include <string>
 #include <thread>
 #include <variant>
@@ -5,14 +8,23 @@
 #include "job.hpp"
 #include "messagequeue.hpp"
 
-struct NewJob {
-  Job *job;
-};
-struct Exit {};
-
-using SlaveMessage = std::variant<NewJob, Exit>;
+// Forward declaration to avoid circular dependency
+class JobSystem;
 
 class Slave {
+  friend JobSystem;
+
+public:
+  struct NewJob {
+    Job *job;
+  };
+  struct Exit {};
+
+  using Message = std::variant<NewJob, Exit>;
+
+  Slave(std::string name, MessageQueue<Slave::Message> *job_waiting_mq,
+        JobSystem *system);
+
 private:
   /// A unique name to identify the Slave
   std::string name;
@@ -21,12 +33,11 @@ private:
   /// asynchronously
   std::thread handle;
 
-  /// Message passing queue that stores jobs that are awaiting completion
-  MessageQueue<SlaveMessage> *job_waiting_mq;
+  /// Reference to System to perform post-completion tasks
+  JobSystem *system;
 
   /// Daemon that will accept jobs and execute them
   void WorkDaemon();
-
-public:
-  Slave(std::string name, MessageQueue<SlaveMessage> *job_waiting_mq);
 };
+
+#endif
