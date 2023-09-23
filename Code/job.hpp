@@ -13,6 +13,8 @@ public:
   /// A callback function that is called after Execute() completes on the Master
   /// thread. This function should focus on cleanup/lightweight tasks.
   virtual void JobCompleteCallback(){};
+
+  virtual ~Job(){};
 };
 
 #endif
