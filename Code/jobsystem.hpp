@@ -32,8 +32,11 @@ public:
   void enqueue(Job *job);
 
   /// Checks status for specific job id
-  JobStatus get_status(unsigned long id);
+  JobStatus get_status(unsigned long id) const;
 
+  /// Removes the HistoryEntry (if any), for the specified job ID
+  void remove_entry(unsigned long id);
+ 
   /// Initializes new thread job system
   void add_slave(std::string name);
 
