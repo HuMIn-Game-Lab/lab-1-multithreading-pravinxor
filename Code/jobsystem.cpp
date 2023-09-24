@@ -37,6 +37,11 @@ void JobSystem::update_id_history(Job *job, JobStatus status) {
   found_entry->status = status;
 }
 
+std::vector<HistoryEntry> JobSystem::current_history() {
+  std::lock_guard<std::mutex> history_lock(this->history_mtx);
+  return this->history;
+}
+
 void JobSystem::cleanup() {
 
   for (unsigned long n = 0; n < this->slaves.size(); ++n)

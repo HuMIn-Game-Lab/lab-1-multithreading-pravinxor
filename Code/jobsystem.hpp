@@ -40,6 +40,9 @@ public:
   /// Initializes new thread job system
   void add_slave(std::string name);
 
+  /// Returns a copy of the history entries at the current time
+  std::vector<HistoryEntry> current_history();
+
   /// Joins all threads and prepares the job system for being destroyed
   void cleanup();
 
