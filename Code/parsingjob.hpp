@@ -3,20 +3,22 @@
 
 #include "job.hpp"
 #include <string>
+#include <unordered_map>
 #include <vector>
-
-struct Error {
-  std::string filename;
-  int line, column;
-  std::string message;
-};
 
 class ParsingJob : public Job {
 private:
   std::string ingest;
 
 public:
-  std::vector<Error> errors;
+  struct Error {
+    std::string filename;
+    int line, column;
+    std::string message;
+  };
+
+  /// Errors mapped to the filenames where they occured
+  std::unordered_map<std::string, std::vector<ParsingJob::Error>> errors;
   unsigned int id;
   ParsingJob(int id, std::string ingest);
   void execute() override;
