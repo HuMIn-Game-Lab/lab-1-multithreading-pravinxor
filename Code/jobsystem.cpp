@@ -32,7 +32,7 @@ void JobSystem::remove_entry(unsigned long id) {
                        [id](HistoryEntry entry) { return entry.id == id; });
 }
 
-std::vector<Job*> JobSystem::get_completed(unsigned long n_jobs) {
+std::vector<Job *> JobSystem::get_completed(unsigned long n_jobs) {
   return this->completed_jobs.receive_n(n_jobs);
 }
 
@@ -46,13 +46,12 @@ void JobSystem::update_id_history(Job *job, JobStatus status) {
   found_entry->status = status;
 }
 
-std::vector<HistoryEntry> JobSystem::current_history() {
+std::vector<HistoryEntry> JobSystem::current_history() const {
   std::lock_guard<std::mutex> history_lock(this->history_mtx);
   return this->history;
 }
 
-void JobSystem::cleanup() {
-
+void JobSystem::join() {
   for (unsigned long n = 0; n < this->slaves.size(); ++n)
     this->queued_jobs.send(Slave::Exit{});
 

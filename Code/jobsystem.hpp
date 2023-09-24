@@ -42,10 +42,11 @@ public:
   std::vector<Job *> get_completed(unsigned long n_jobs);
 
   /// Returns a copy of the history entries at the current time
-  std::vector<HistoryEntry> current_history();
+  std::vector<HistoryEntry> current_history() const;
 
-  /// Joins all threads and prepares the job system for being destroyed
-  void cleanup();
+  /// Joins all threads and prepares the job system for being destroyed. This
+  /// does NOT deallocate any dynamic memory.
+  void join();
 
 private:
   std::vector<Slave> slaves;
@@ -59,7 +60,7 @@ private:
 
   /// History entries whose states will be managed by the System and Slaves
   std::vector<HistoryEntry> history;
-  std::mutex history_mtx;
+  mutable std::mutex history_mtx;
 
   /// Private function to be used by the slaves when jobs are completed
   void update_id_history(Job *job, JobStatus status);
