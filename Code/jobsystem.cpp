@@ -18,7 +18,10 @@ JobStatus JobSystem::get_status(unsigned long id) const {
   auto entry =
       std::find_if(this->history.begin(), this->history.begin(),
                    [id](HistoryEntry entry) { return entry.id == id; });
-  return entry->status;
+  if (entry != this->history.end())
+    return entry->status;
+  else
+    return JobStatus::NEVER_SEEN;
 }
 
 void JobSystem::remove_entry(unsigned long id) {
