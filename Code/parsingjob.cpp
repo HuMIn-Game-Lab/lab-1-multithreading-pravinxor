@@ -11,7 +11,7 @@
 ParsingJob::ParsingJob(int id, std::string ingest) : ingest(ingest), id(id) {}
 
 void ParsingJob::execute() {
-  std::regex err_expr("(.*):(\\d+):(\\d+): error: (.*)");
+  std::regex err_expr("(.*):(\\d+):(\\d+): (?:error|warning): (.*)");
 
   std::istringstream ess(this->ingest);
 
