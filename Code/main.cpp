@@ -11,10 +11,17 @@ int main() {
   JobSystem js;
   js.add_slave("thread1");
   js.add_slave("thread2");
-  std::string target = "demo";
-  Job *j = new MakeJob(0, target);
+  MakeJob *j = new MakeJob(0, "demo");
   js.enqueue(j);
   js.cleanup();
+  std::vector<HistoryEntry> entries = js.current_history();
+
+  for (HistoryEntry entry : entries) {
+    std::cout << entry.id << ' ' << entry.status << '\n';
+  }
+
+  std::cout << j->stdout << '\n';
+
   delete j;
   return 0;
 }
