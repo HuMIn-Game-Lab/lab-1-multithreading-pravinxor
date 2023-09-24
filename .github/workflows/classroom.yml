@@ -20,7 +20,8 @@ jobs:
       - name: Install demo dependencies
         run: sudo apt-get install jq
       
+      - uses: education/autograding@v1
+
       - name: Run demo
         run: ./output | jq
       
-      - uses: education/autograding@v1
