@@ -46,7 +46,8 @@ public:
     std::unique_lock<std::mutex> messages_lock(this->messages_mtx);
     cv.wait(messages_lock, [this, n] { return this->messages.size() >= n; });
 
-    std::vector<T> flushed_messages(n);
+    std::vector<T> flushed_messages;
+    flushed_messages.reserve(n);
 
     for (unsigned long k = 0; k < n; ++k) {
       flushed_messages.push_back(pop_impl(this->messages));
@@ -62,6 +63,7 @@ template <typename T> T pop_impl(std::queue<T> &c) {
   return value;
 }
 
+/// Priority queue specialization
 template <typename T, typename C>
 class MessageQueue<T, std::priority_queue, C> {
 private:
@@ -95,6 +97,7 @@ public:
     cv.wait(messages_lock, [this, n] { return this->messages.size() >= n; });
 
     std::vector<T> flushed_messages;
+    flushed_messages.reserve(n);
 
     for (unsigned long k = 0; k < n; ++k) {
       flushed_messages.push_back(pop_impl(this->messages));
