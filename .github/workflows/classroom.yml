@@ -17,4 +17,7 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install nlohmann-json3-dev
       
+      - name: Run demo
+        run: ./output
+      
       - uses: education/autograding@v1
