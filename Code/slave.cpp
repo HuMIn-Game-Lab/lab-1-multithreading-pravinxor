@@ -25,6 +25,7 @@ void Slave::WorkDaemon() {
       job->execute();
       this->system->update_id_history(job, JobStatus::COMPLETED);
 
+      this->system->completed_jobs.send(job);
       job->chain_next(this->system);
 
       break;
