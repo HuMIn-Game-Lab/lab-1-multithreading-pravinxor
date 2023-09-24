@@ -11,7 +11,8 @@ public:
   std::string stdout;
   unsigned char retcode;
   MakeJob(unsigned int id, std::string target);
-  void Execute() override;
+  void execute() override;
+  void chain_next(JobSystem *system) override;
 };
 
 #endif
