@@ -13,7 +13,7 @@ MakeJob::MakeJob(unsigned int id, std::string target) : id(id), target(target) {
 }
 
 void MakeJob::execute() {
-  std::string command = "make " + this->target;
+  std::string command = "make " + this->target + " 2>&1";
   std::cerr << "Running: " << command;
   FILE *pipe = popen(command.c_str(), "r");
 
