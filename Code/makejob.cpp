@@ -14,7 +14,6 @@ MakeJob::MakeJob(unsigned int id, std::string target) : id(id), target(target) {
 
 void MakeJob::execute() {
   std::string command = "make " + this->target + " 2>&1";
-  std::cerr << "Running: " << command;
   FILE *pipe = popen(command.c_str(), "r");
 
   if (!pipe) {
@@ -27,8 +26,6 @@ void MakeJob::execute() {
     this->stdout.append(buffer.data());
   }
   this->retcode = pclose(pipe);
-
-  std::cout << "Job " << this->id << " has been executed\n";
 }
 
 void MakeJob::chain_next(JobSystem *system) {

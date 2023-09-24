@@ -33,7 +33,6 @@ void JobSystem::remove_entry(unsigned long id) {
 }
 
 std::vector<Job*> JobSystem::get_completed(unsigned long n_jobs) {
-  std::cerr << "Waiting to recieve";
   return this->completed_jobs.receive_n(n_jobs);
 }
 
