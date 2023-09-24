@@ -1,27 +1,29 @@
 #include "job.hpp"
 #include "jobsystem.hpp"
 #include "makejob.hpp"
+#include "parsingjob.hpp"
 
 #include <iostream>
 #include <thread>
 
-MessageQueue<int> mq;
-
 int main() {
-  JobSystem js;
-  js.add_slave("thread1");
-  js.add_slave("thread2");
   MakeJob *j = new MakeJob(0, "demo");
-  js.enqueue(j);
-  js.cleanup();
-  std::vector<HistoryEntry> entries = js.current_history();
 
-  for (HistoryEntry entry : entries) {
-    std::cout << entry.id << ' ' << entry.status << '\n';
+  JobSystem js;
+
+  for (unsigned int n = 1; n <= std::thread::hardware_concurrency(); ++n)
+    js.add_slave("thread" + std::to_string(n));
+
+  js.enqueue(j);
+
+  std::vector<Job *> completed_jobs = js.get_completed(2);
+  // MakeJob *mj = (MakeJob*)completed_jobs[0];
+  // std::cerr << mj->stdout << '\n';
+  ParsingJob *pj = (ParsingJob *)completed_jobs[1];
+  for (Error e : pj->errors) {
+    std::cerr << e.column << ' ' << e.line << ' ' << e.filename<< ' ' << e.message << '\n';
   }
 
-  std::cout << j->stdout << '\n';
-
-  delete j;
+  js.cleanup();
   return 0;
 }
