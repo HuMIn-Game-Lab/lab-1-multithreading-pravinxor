@@ -4,14 +4,7 @@
 #include "slave.hpp"
 #include <vector>
 
-enum JobStatus {
-  NEVER_SEEN,
-  QUEUED,
-  RUNNING,
-  COMPLETED,
-  RETIRED,
-  N_JOB_STATUSES
-};
+enum JobStatus { NEVER_SEEN, QUEUED, RUNNING, COMPLETED, N_JOB_STATUSES };
 
 struct HistoryEntry {
 public:
@@ -26,6 +19,10 @@ class JobSystem {
   friend Slave;
 
 public:
+  /// An atomic (that is only meant to increase), which in theory yields unique
+  /// job IDs
+  static std::atomic<unsigned long> NEXT_JOB_ID;
+
   using Message = Job *;
 
   /// Loads job into queue and adds and entry into the history
@@ -36,7 +33,7 @@ public:
 
   /// Removes the HistoryEntry (if any), for the specified job ID
   void remove_entry(unsigned long id);
- 
+
   /// Initializes new thread job system
   void add_slave(std::string name);
 
@@ -50,10 +47,11 @@ private:
   std::vector<Slave> slaves;
 
   /// *Sends* messages to slaves
-  MessageQueue<Slave::Message> queued_jobs;
+  MessageQueue<Slave::Message, std::priority_queue, Slave::CompareMessage>
+      queued_jobs;
 
   /// *Receives* messages from slaves
-  MessageQueue<JobSystem::Message> completed_jobs;
+  MessageQueue<JobSystem::Message, std::queue> completed_jobs;
 
   /// History entries whose states will be managed by the System and Slaves
   std::vector<HistoryEntry> history;
