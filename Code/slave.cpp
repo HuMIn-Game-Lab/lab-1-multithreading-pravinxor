@@ -4,7 +4,9 @@
 #include <iostream>
 #include <thread>
 
-Slave::Slave(std::string name, MessageQueue<Slave::Message> *job_waiting_mq,
+Slave::Slave(std::string name,
+             MessageQueue<Slave::Message, std::priority_queue,
+                          Slave::CompareMessage> *job_waiting_mq,
              JobSystem *system)
     : name(name), system(system) {
   this->handle = std::thread([this] { this->WorkDaemon(); });
@@ -18,17 +20,19 @@ void Slave::WorkDaemon() {
     switch (message.index()) {
     case 0: // New Job
       job = std::get<NewJob>(message).job;
+
       this->system->update_id_history(job, JobStatus::RUNNING);
-      job->Execute();
+      job->execute();
       this->system->update_id_history(job, JobStatus::COMPLETED);
-      job->JobCompleteCallback();
-      this->system->update_id_history(job, JobStatus::RETIRED);
+
+      job->chain_next(this->system);
+
       break;
 
     case 1: // Stop the daemon
       return;
 
-    default:
+    default: // Whoops?
       std::cerr << "Error in slave: " << this->name
                 << " Unhandled message type, ignoring\n";
     }

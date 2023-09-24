@@ -1,6 +1,7 @@
 #ifndef SLAVE_HPP
 #define SLAVE_HPP
 
+#include <queue>
 #include <string>
 #include <thread>
 #include <variant>
@@ -21,8 +22,18 @@ public:
   struct Exit {};
 
   using Message = std::variant<NewJob, Exit>;
+  struct CompareMessage {
+    /// Operator gives Exit less priority
+    bool operator()(const Message &a, Message &b) {
+      return std::holds_alternative<Exit>(a) &&
+             std::holds_alternative<NewJob>(b);
+    }
+  };
 
-  Slave(std::string name, MessageQueue<Slave::Message> *job_waiting_mq,
+  Slave(std::string name,
+        MessageQueue<Slave::Message, std::priority_queue, Slave::CompareMessage>
+            *job_waiting_mq,
+
         JobSystem *system);
 
 private:
