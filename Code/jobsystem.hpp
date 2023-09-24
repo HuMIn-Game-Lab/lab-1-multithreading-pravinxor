@@ -37,6 +37,10 @@ public:
   /// Initializes new thread job system
   void add_slave(std::string name);
 
+  /// Returns n completed jobs, blocks if the n jobs are not immediately
+  /// available
+  std::vector<Job *> get_completed(unsigned long n_jobs);
+
   /// Returns a copy of the history entries at the current time
   std::vector<HistoryEntry> current_history();
 

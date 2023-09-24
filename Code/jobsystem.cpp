@@ -3,6 +3,8 @@
 #include <iostream>
 #include <mutex>
 
+std::atomic<unsigned long> JobSystem::NEXT_JOB_ID = 0;
+
 void JobSystem::enqueue(Job *job) {
   HistoryEntry entry = HistoryEntry(job->id, JobStatus::QUEUED);
 
@@ -28,6 +30,11 @@ void JobSystem::remove_entry(unsigned long id) {
   std::lock_guard<std::mutex> history_lock(this->history_mtx);
   (void)std::remove_if(this->history.begin(), this->history.end(),
                        [id](HistoryEntry entry) { return entry.id == id; });
+}
+
+std::vector<Job*> JobSystem::get_completed(unsigned long n_jobs) {
+  std::cerr << "Waiting to recieve";
+  return this->completed_jobs.receive_n(n_jobs);
 }
 
 void JobSystem::update_id_history(Job *job, JobStatus status) {
