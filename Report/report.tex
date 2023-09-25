@@ -19,4 +19,16 @@
 			The \texttt{JobSystem} itself is designed such that it will not carry any publicly accessible memory. All memory that is publicly accessible, including memory allocated by jobs themselves, is managed under the responsibility of the programmer. All jobs that are handled by the system will have memory that may outlive the scope of the \texttt{JobSystem} and can be freed by the programmer at his free-will. The effect of this is that complexity that might've existed within the system is now a burden to the programmer.
 	\subsection{UML Overview}
 	\subsection{Usage of \texttt{JobSystem}}
+		\subsubsection{Preamble}
+			Using the JobSystem is straightforward, however it will require bookkeeping in terms of memory usage of jobs. 
+		\subsubsection{Intializing the \texttt{JobSystem}}
+			First, the programmer must initialize the \texttt{JobSystem}. Here we will call it \texttt{JobSystem system;}
+		\subsubsection{Initializing \texttt{Slave}s}
+			Additionally, in order to do work, \texttt{Slave}s must be initialized to do work. This can be done with \texttt{system.add\_slave("thread" + std::to\_string(n));} This function may be called multiple times, however the appropriate amount of vary based on the nature of the work being done. Compute-bound, branchless code may prefer to limit the number of \texttt{Slaves}s to the number of physical cores, whereas I/O bound code may opt for many more threads than physical cores.
+		\subsubsection{\texttt{Job} Allocation}
+			Next, memory must be allocated for a job. Note: this memory, must outlive the lifetime of the JobSystem. Not doing so will result in undefined behavior. Next we will create a new MakeJob using \texttt{MakeJob *mj = new MakeJob(0, "demo");}. The arguments for this specific job are the \texttt{id} and the make \texttt{target}. 
+		\subsubsection{Submitting \texttt{Job}s into the \texttt{JobSystem}}
+			Next, we will \texttt{enqueue} the job into the system for it to be executed, using \texttt{system->enqueue(mj)}. The \texttt{enqueue()} function will accept any pointer, which inherits from the \texttt{Job} API. Once the \texttt{Job*} has entered the system, it will be sent to the \texttt{Slave}s in a FIFO manner, (however it is not guranteed to be completed in a FIFO manner).
+	
+	\subsection{Demonstration of \texttt{JobSystem}}
 \end{document}
