@@ -12,10 +12,9 @@ private:
   std::unordered_map<std::string, std::vector<ParsingJob::Error>> *errors;
 
 public:
-  unsigned int id;
   nlohmann::json errors_json;
   JSONJob(
-      int id,
+      unsigned int id,
       std::unordered_map<std::string, std::vector<ParsingJob::Error>> *errors);
   void execute() override;
 };

@@ -6,7 +6,6 @@
 #include <string>
 class MakeJob : public Job {
 public:
-  unsigned int id;
   std::string target;
   std::string stdout;
   unsigned char retcode;

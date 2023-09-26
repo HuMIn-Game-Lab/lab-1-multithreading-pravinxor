@@ -8,17 +8,20 @@
 #include <sstream>
 #include <string>
 
-ParsingJob::ParsingJob(int id, std::string ingest) : ingest(ingest), id(id) {}
+ParsingJob::ParsingJob(unsigned int id, std::string ingest) : ingest(ingest) {
+  this->id = id;
+}
 
 void ParsingJob::execute() {
-  std::regex err_expr("(.*):(\\d+):(\\d+): (?:error|warning): (.*)");
+  std::regex linker_expr("clang-\\d+: error: (.*)");
+  std::regex compiler_expr("(.*):(\\d+):(\\d+): (?:error|warning): (.*)");
 
   std::istringstream ess(this->ingest);
 
   std::string line;
   while (std::getline(ess, line)) {
     std::smatch match;
-    if (std::regex_match(line, match, err_expr)) {
+    if (std::regex_match(line, match, compiler_expr)) {
       // Assumed that errors will have a snippet or extra line, so wait for 2
       // passes to add error
       std::string filename = match[1];

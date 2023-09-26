@@ -3,9 +3,11 @@
 #include <iostream>
 
 JSONJob::JSONJob(
-    int id,
+    unsigned int id,
     std::unordered_map<std::string, std::vector<ParsingJob::Error>> *errors)
-    : errors(errors), id(id) {}
+    : errors(errors) {
+  this->id = id;
+}
 
 void JSONJob::execute() {
   for (const std::pair<const std::string, std::vector<ParsingJob::Error>>

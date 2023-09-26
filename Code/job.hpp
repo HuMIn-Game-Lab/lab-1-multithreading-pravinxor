@@ -9,7 +9,6 @@ class JobSystem;
 class Job {
 
 public:
-
   /// A unique identifier for the job
   unsigned int id;
 

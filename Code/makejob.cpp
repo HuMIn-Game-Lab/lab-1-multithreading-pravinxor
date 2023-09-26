@@ -8,7 +8,8 @@
 #include <iostream>
 #include <sstream>
 
-MakeJob::MakeJob(unsigned int id, std::string target) : id(id), target(target) {
+MakeJob::MakeJob(unsigned int id, std::string target) : target(target) {
+  this->id = id;
   this->retcode = 0;
 }
 

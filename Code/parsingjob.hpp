@@ -20,7 +20,7 @@ public:
   /// Errors mapped to the filenames where they occured
   std::unordered_map<std::string, std::vector<ParsingJob::Error>> errors;
   unsigned int id;
-  ParsingJob(int id, std::string ingest);
+  ParsingJob(unsigned int id, std::string ingest);
   void execute() override;
   void chain_next(JobSystem *system) override;
 };
