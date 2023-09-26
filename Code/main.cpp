@@ -31,7 +31,8 @@ int main(int argc, char *argv[]) {
   std::vector<Job *> completed_jobs = js.get_completed(3 * loadablejobs.size());
 
   for (Job *job : completed_jobs) {
-    if (JSONJob *jj = dynamic_cast<JSONJob *>(job)) {
+    JSONJob *jj = dynamic_cast<JSONJob *>(job);
+    if (jj != nullptr) {
       std::cout << jj->errors_json;
     }
     delete job;
