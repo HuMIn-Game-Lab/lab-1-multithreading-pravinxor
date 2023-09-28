@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{fancyhdr}
 \usepackage[margin=1in]{geometry}
+\usepackage{svg}
 
 \pagestyle{fancy}
 \lhead{Pravin Ramana}
@@ -18,6 +19,7 @@
 		\subsubsection{No public system-scoped memory}
 			The \texttt{JobSystem} itself is designed such that it will not carry any publicly accessible memory. All memory that is publicly accessible, including memory allocated by jobs themselves, is managed under the responsibility of the programmer. All jobs that are handled by the system will have memory that may outlive the scope of the \texttt{JobSystem} and can be freed by the programmer at his free-will. The effect of this is that complexity that might've existed within the system is now a burden to the programmer.
 	\subsection{UML Overview}
+		\includesvg[inkscapelatex=false,width=\textwidth]{diagram}
 	\subsection{Usage of \texttt{JobSystem}}
 		\subsubsection{Preamble}
 			Using the JobSystem is straightforward, however it will require bookkeeping in terms of memory usage of jobs. 
