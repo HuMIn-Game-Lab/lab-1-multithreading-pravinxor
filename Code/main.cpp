@@ -1,11 +1,9 @@
-#include "job.hpp"
 #include "jobsystem.hpp"
 #include "jsonjob.hpp"
 #include "makejob.hpp"
 #include "parsingjob.hpp"
 
 #include <iostream>
-#include <thread>
 
 int main(int argc, char *argv[]) {
   std::vector<MakeJob *> loadablejobs;
