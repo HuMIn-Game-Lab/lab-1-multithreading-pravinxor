@@ -24,17 +24,27 @@ std::vector<std::string> getLines(const std::string &filename, int lineNumber) {
 
   // Get the size of the file
   struct stat sb;
-  fstat(fd, &sb);
+  int ret = fstat(fd, &sb);
+
+  // If the file cannot be opened, return an empty vector
+  if (ret == -1) {
+    return {};
+  }
 
   // Map the file into memory
-  char *fileInMemory =
+  char *file_mapped =
       (char *)mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
+  // If the map failed, return an empty vector
+  if (file_mapped == MAP_FAILED) {
+    return {};
+  }
+
   std::vector<std::string> result;
-  char *start = fileInMemory, *end;
+  char *start = file_mapped, *end;
   int lineCount = 0;
 
-  for (end = start; end != fileInMemory + sb.st_size; ++end) {
+  for (end = start; end != file_mapped + sb.st_size; ++end) {
     if (*end == '\n') {
       if (lineCount >= lineNumber - 3 && lineCount < lineNumber + 2) {
         std::string line(start, end);
@@ -55,7 +65,7 @@ std::vector<std::string> getLines(const std::string &filename, int lineNumber) {
   }
 
   // Unmap
-  munmap(fileInMemory, sb.st_size);
+  munmap(file_mapped, sb.st_size);
 
   // close file
   close(fd);
