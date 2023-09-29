@@ -41,8 +41,8 @@
 		\subsubsection{Makefile targets}
 			Given a Makefile with the contents:
 			\begin{verbatim}
-			demo: ./Data/Demo/main.cpp
-				clang++ -pipe -Wall ./Data/Demo/*.cpp -o demo
+			demo: ./Code/Demo/main.cpp
+				clang++ -pipe -Wall ./Code/Demo/*.cpp -o demo
 			\end{verbatim}
 		\subsubsection{Internal operations}
 			When running \texttt{./system demo}, the system will internally call the makefile and call parsing and JSON generating jobs after. The JSON output is held in a queue until all make targets are completed. Since there is only a single target, it will be printed to stdout immediately.
