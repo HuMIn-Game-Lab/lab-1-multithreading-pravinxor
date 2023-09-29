@@ -23,5 +23,5 @@ jobs:
       - uses: education/autograding@v1
 
       - name: Run demo
-        run: ./output demo | jq --color-output
+        run: ./system demo | jq --color-output
       
