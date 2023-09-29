@@ -13,11 +13,11 @@
 	\subsection{Memory Management and Thread Protection Paradigms}
 	The architecture of the job system is similar to the one detailed in class, however it makes several different design decisions to reduce complexity.
 		\subsubsection{Guards over raw mutexes}
-		One of the first is by using \texttt{lock\_guard}s or \texttt{unique\_lock}s, when necessary. The benefit to using these is that in the event of an exception, locking will occuring automatically when the locks go out of scope (or when explicitly unlocked), reducing the chances of unintended deadlocks. These types of mutex come at the disadvantage that they provide some overhead, however, it is small enough that it is work the additional safety that they provide.
+		One of the first is by using \texttt{lock\_guard}s or \texttt{unique\_lock}s, when necessary. The benefit to using these is that in the event of an exception, locking will occur automatically when the locks go out of scope (or when explicitly unlocked), reducing the chances of unintended deadlocks. These types of mutex come at the disadvantage that they provide some overhead, however, it is small enough that it is worth the additional safety that they provide.
 		\subsubsection{Message Passing}
-			One of the other notable changes is the use of a message passing system backed by kernel interrupts, rather than busy-waiting. In general, spinning in userspace is a bad idea, as it may compete for CPU time with the OS, or introduce delays. To avoid this, a \texttt{MessageQueue} system is used for passing data between the Master thread and its Slave threads. This allows threads to efficiently sleep while waiting for work, rather than waking up at an interval to check for work. In general, this solution is advantageous, but may cause slowdowns when context-switching is expensive.
+			One of the other notable changes is the use of a message passing system backed by kernel interrupts, rather than busy-waiting. In general, spinning in userspace is a bad idea, as it may compete for CPU time with the OS, or introduce delays. To avoid this, a \texttt{MessageQueue} system is used for passing data between the Master thread and its Slave threads. This allows threads to efficiently sleep while waiting for work, rather than waking up at an interval to check for work. In general, this solution is advantageous, but may cause slowdowns when context-switching from kernelmode to usermode is expensive.
 		\subsubsection{No public system-scoped memory}
-			The \texttt{JobSystem} itself is designed such that it will not carry any publicly accessible memory. All memory that is publicly accessible, including memory allocated by jobs themselves, is managed under the responsibility of the programmer. All jobs that are handled by the system will have memory that may outlive the scope of the \texttt{JobSystem} and can be freed by the programmer at his free-will. The effect of this is that complexity that might've existed within the system is now a burden to the programmer.
+			The \texttt{JobSystem} itself is designed such that it will not carry any publicly accessible memory. All memory that is publicly accessible, including memory allocated by jobs themselves, is managed under the responsibility of the programmer. All jobs that are handled by the system will have memory that may outlive the scope of the \texttt{JobSystem} and can be freed by the programmer at his free-will. In effect, this reduces complexity within the system, however it adds it as an additional burden on the programmer.
 	\subsection{UML Overview}
 		\includesvg[inkscapelatex=false,width=\textwidth]{diagram}
 	\subsection{Usage of \texttt{JobSystem}}
@@ -26,17 +26,17 @@
 		\subsubsection{Intializing the \texttt{JobSystem}}
 			First, the programmer must initialize the \texttt{JobSystem}. Here we will call it \texttt{JobSystem system;}
 		\subsubsection{Initializing \texttt{Slave}s}
-			Additionally, in order to do work, \texttt{Slave}s must be initialized to do work. This can be done with \texttt{system.add\_slave("thread" + std::to\_string(n));} This function may be called multiple times, however the appropriate amount of vary based on the nature of the work being done. Compute-bound, branchless code may prefer to limit the number of \texttt{Slaves}s to the number of physical cores, whereas I/O bound code may opt for many more threads than physical cores.
+			Additionally, in order to do work, \texttt{Slave}s must be initialized to do work. This can be done with \texttt{system.add\_slave("thread" + std::to\_string(n));} This function may be called multiple times, however the appropriate amount varies based on the nature of the work being done. Compute-bound, branchless code may prefer to limit the number of \texttt{Slaves}s to the number of physical cores, whereas I/O bound code may opt for many more threads than physical cores.
 		\subsubsection{\texttt{Job} Allocation}
 			Next, memory must be allocated for a job. Note: this memory, must outlive the lifetime of the JobSystem. Not doing so will result in undefined behavior. Next we will create a new MakeJob using \texttt{MakeJob *mj = new MakeJob(0, "demo");}. The arguments for this specific job are the \texttt{id} and the make \texttt{target}. 
 		\subsubsection{Submitting \texttt{Job}s into the \texttt{JobSystem}}
-			Next, we will \texttt{enqueue} the job into the system for it to be executed, using \texttt{system->enqueue(mj)}. The \texttt{enqueue()} function will accept any pointer, which inherits from the \texttt{Job} API. Once the \texttt{Job*} has entered the system, it will be sent to the \texttt{Slave}s in a FIFO manner, (however it is not guranteed to be completed in a FIFO manner).
+			Next, to execute the job, we will enqueue it into the system using \texttt{system->enqueue(mj)}. The \texttt{enqueue()} function will accept any pointer, which inherits from the \texttt{Job} API. Once the \texttt{Job*} has entered the system, it will be sent to the \texttt{Slave}s in a FIFO manner, (however it is not guaranteed to be completed in a FIFO manner).
 		\subsubsection{Receiving completed \texttt{Job}s from the \texttt{JobSystem}}
 			The \texttt{JobSystem} offers a basic interface for recieving completed jobs. \texttt{js.get\_completed(n);} will block execution until \texttt{n} jobs are available to be recieved, and returned. Note: there is no logical checking that is done by the function itself. It is up to the programmer to determine whether it is possible for \texttt{n} jobs to be available, otherwise the program may hang if an \texttt{n} that is too large.
 	
 	\subsection{Demonstration of \texttt{JobSystem}}
 		\subsubsection{Overview}
-			The \texttt{JobSystem} implementation being demonstrated is implemented to build targets from a Makefile. It is provided arguments, which are the names of the targets from a Makefile in the current directory. When the \texttt{JobSystem} is built into a binary, say named \texttt{system}.
+			The \texttt{JobSystem} implementation being demonstrated is being used to build targets from a Makefile in parallel. It is provided arguments, which are the names of the targets from a Makefile in the current directory. When the \texttt{JobSystem} is built into a binary, say named \texttt{system}.
 			
 		\subsubsection{Makefile targets}
 			Given a Makefile with the contents:
@@ -45,7 +45,7 @@
 				clang++ -pipe -Wall ./Data/Demo/*.cpp -o demo
 			\end{verbatim}
 		\subsubsection{Internal operations}
-			When running \texttt{./system demo}, the system will internally call the makefile and call parsing and JSON generating jobs after. The JSON output is held in a queue until all make targets are completed. Since there is only a single target, it will printed to stdout immediately.
+			When running \texttt{./system demo}, the system will internally call the makefile and call parsing and JSON generating jobs after. The JSON output is held in a queue until all make targets are completed. Since there is only a single target, it will be printed to stdout immediately.
 		\subsubsection{Output}
 			The output of the program will be a single line JSON object for each built target. Errors and warnings are not differentiated in JSON format, unless it is explicitly noted by the compiler. For example, the following error output:
 			\begin{verbatim}
@@ -78,6 +78,5 @@
 				    },
 				}
 			\end{verbatim}
-			In the parsed output, at most, 2 lines surrounding the line containing the error are provided, along with information about the line and column \# where the error occurred, as well as the error message emmited by the clang compiler.
-			In the event that 
+			In the parsed output, at most, 2 lines surrounding the line containing the error are provided, along with information about the line and column \# where the error occurred, as well as the error message emitted by the clang compiler. 
 \end{document}
