@@ -31,6 +31,53 @@
 			Next, memory must be allocated for a job. Note: this memory, must outlive the lifetime of the JobSystem. Not doing so will result in undefined behavior. Next we will create a new MakeJob using \texttt{MakeJob *mj = new MakeJob(0, "demo");}. The arguments for this specific job are the \texttt{id} and the make \texttt{target}. 
 		\subsubsection{Submitting \texttt{Job}s into the \texttt{JobSystem}}
 			Next, we will \texttt{enqueue} the job into the system for it to be executed, using \texttt{system->enqueue(mj)}. The \texttt{enqueue()} function will accept any pointer, which inherits from the \texttt{Job} API. Once the \texttt{Job*} has entered the system, it will be sent to the \texttt{Slave}s in a FIFO manner, (however it is not guranteed to be completed in a FIFO manner).
+		\subsubsection{Receiving completed \texttt{Job}s from the \texttt{JobSystem}}
+			The \texttt{JobSystem} offers a basic interface for recieving completed jobs. \texttt{js.get\_completed(n);} will block execution until \texttt{n} jobs are available to be recieved, and returned. Note: there is no logical checking that is done by the function itself. It is up to the programmer to determine whether it is possible for \texttt{n} jobs to be available, otherwise the program may hang if an \texttt{n} that is too large.
 	
 	\subsection{Demonstration of \texttt{JobSystem}}
+		\subsubsection{Overview}
+			The \texttt{JobSystem} implementation being demonstrated is implemented to build targets from a Makefile. It is provided arguments, which are the names of the targets from a Makefile in the current directory. When the \texttt{JobSystem} is built into a binary, say named \texttt{system}.
+			
+		\subsubsection{Makefile targets}
+			Given a Makefile with the contents:
+			\begin{verbatim}
+			demo: ./Data/Demo/main.cpp
+				clang++ -pipe -Wall ./Data/Demo/*.cpp -o demo
+			\end{verbatim}
+		\subsubsection{Internal operations}
+			When running \texttt{./system demo}, the system will internally call the makefile and call parsing and JSON generating jobs after. The JSON output is held in a queue until all make targets are completed. Since there is only a single target, it will printed to stdout immediately.
+		\subsubsection{Output}
+			The output of the program will be a single line JSON object for each built target. Errors and warnings are not differentiated in JSON format, unless it is explicitly noted by the compiler. For example, the following error output:
+			\begin{verbatim}
+				clang++ -pipe -Wall ./Code/Demo/*.cpp -o demo
+				./Code/Demo/main.cpp:2:1: error: unknown type name 'string'; did you mean 'std::string'?
+				string dsa() {
+				^~~~~~
+				std::string
+				/usr/bin/../lib64/gcc/x86_64-pc-linux-gnu/13.2.1/../../../../include/c++/13.2.1/bits/stringfwd.h:77:33: note: 'std::string' declared here
+				  typedef basic_string<char>    string;   
+				                                ^
+				1 error generated.
+
+				make: *** [Makefile:5: demo] Error 1
+			\end{verbatim}
+			The parsed JSON will be:
+			\begin{verbatim}
+				{
+				  "./Code/Demo/main.cpp": [
+				    {
+				      "chunk": [
+				        "#include <iostream>",
+				        "string dsa() {",
+				        "  let d = {",
+				        "    das auto;"
+				      ],
+				      "column": 1,
+				      "line": 2,
+				      "message": "unknown type name 'string'; did you mean 'std::string'?"
+				    },
+				}
+			\end{verbatim}
+			In the parsed output, at most, 2 lines surrounding the line containing the error are provided, along with information about the line and column \# where the error occurred, as well as the error message emmited by the clang compiler.
+			In the event that 
 \end{document}
