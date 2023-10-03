@@ -35,7 +35,21 @@
 			Next, to execute the job, we will enqueue it into the system using \texttt{system.enqueue(mj)}. The \texttt{enqueue()} function will accept any pointer, which inherits from the \texttt{Job} API. Once the \texttt{Job*} has entered the system, it will be sent to the \texttt{Slave}s in a FIFO manner, (however it is not guaranteed to be completed in a FIFO manner).
 		\subsubsection{Receiving completed \texttt{Job}s from the \texttt{JobSystem}}
 			The \texttt{JobSystem} offers a basic interface for recieving completed jobs. \texttt{js.get\_completed(n);} will block execution until \texttt{n} jobs are available to be recieved, and returned. Note: there is no logical checking that is done by the function itself. It is up to the programmer to determine whether it is possible for \texttt{n} jobs to be available, otherwise the program may hang if an \texttt{n} that is too large.
-	
+	\subsection {\texttt{JobSystem} Function Information}
+		\subsubsection{void enqueue(Job *job)}
+			The enqueue function of the job system accepts a pointer to a job. The system does not take any preventative measures to ensure that the Job* is not modified during execution. Modification of the Job* is up to the programmer's discretion.
+		\subsubsection{JobStatus get\_status(unsigned long id) const}
+			This function will query the job system of all jobs that have been enqueued (either directly by the programmer, or indirectly by other jobs). Querying for a job with an id that is in the system multiple times will lead to undefined behavior.
+		\subsubsection{void remove\_entry(unsigned long id)}
+			This function will query the job system's current job history and remove the \texttt{HistoryEntry} with the associated Job ID. Similar to get\_status, this function leads to undefined behavior if there are multiple history entries with the same ID in the system.
+		\subsubsection{void add\_slave(std::string name)}
+			This function will spawn a new slave thread, which may execute work, on the job system. It may be assigned a name, however it is only used for debugging purposes within the system and its information cannot be passed onto the job itself.
+		\subsubsection{std::vector<Job *> get\_completed(unsigned long n\_jobs)}
+			This function will block the thread it was called on and await for \texttt{n\_jobs} to be available from any of the slave threads. This function does not perform any checks to ensure the number of jobs to be returned is valid, nor does it gurantee any ordering of the returned jobs. This is at the discretion of the programmer.
+		\subsubsection{std::vector<HistoryEntry> current\_history() const}
+			This function returns a stale copy of the current job history of the job system.
+		\subsubsection{void join()}
+			This function should always be called when all the desired jobs have been enqueued. This will block execution on the thread it was called from until all the jobs have been completed. It is undefined behavior to continue sending jobs to the system after \texttt{join()} has been called.
 	\subsection{Demonstration of \texttt{JobSystem}}
 		\subsubsection{Overview}
 			The \texttt{JobSystem} implementation being demonstrated is being used to build targets from a Makefile in parallel. It is provided arguments, which are the names of the targets from a Makefile in the current directory. When the \texttt{JobSystem} is built into a binary, say named \texttt{system}.
@@ -80,5 +94,6 @@
 				    },
 				}
 			\end{verbatim}
-			In the parsed output, at most, 2 lines surrounding the line containing the error are provided, along with information about the line and column \# where the error occurred, as well as the error message emitted by the clang compiler. 
+			In the parsed output, at most, 2 lines surrounding the line containing the error are provided, along with information about the line and column \# where the error occurred, as well as the error message emitted by the clang compiler. \\
+			In events where no errors are emitted by the compiler, the program will simply return a null JSON value.
 \end{document}
