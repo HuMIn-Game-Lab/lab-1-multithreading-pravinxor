@@ -3,15 +3,15 @@
 
 #include "job.hpp"
 
+#include <nlohmann/json.hpp>
 #include <string>
-class MakeJob : public Job {
-public:
+class MakeJob : public Job<nlohmann::json> {
+private:
   std::string target;
-  std::string stdout;
-  unsigned char retcode;
-  MakeJob(unsigned int id, std::string target);
-  void execute() override;
-  void chain_next(JobSystem *system) override;
+
+public:
+  MakeJob(nlohmann::json input);
+  nlohmann::json execute() override;
 };
 
 #endif
