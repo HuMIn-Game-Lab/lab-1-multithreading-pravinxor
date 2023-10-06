@@ -1,6 +1,6 @@
 #include "makejob.hpp"
 #include "job.hpp"
-#include "jobsystem.hpp"
+#include "../system/jobsystem.hpp"
 #include "parsingjob.hpp"
 
 #include <array>

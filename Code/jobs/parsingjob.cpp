@@ -1,6 +1,6 @@
 #include "parsingjob.hpp"
 #include "job.hpp"
-#include "jobsystem.hpp"
+#include "../system/jobsystem.hpp"
 #include "jsonjob.hpp"
 
 #include <iostream>

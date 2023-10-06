@@ -1,7 +1,7 @@
-#include "jobsystem.hpp"
-#include "jsonjob.hpp"
-#include "makejob.hpp"
-#include "parsingjob.hpp"
+#include "system/jobsystem.hpp"
+#include "jobs/jsonjob.hpp"
+#include "jobs/makejob.hpp"
+#include "jobs/parsingjob.hpp"
 
 #include <iostream>
 

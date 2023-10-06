@@ -6,7 +6,7 @@
 #include <thread>
 #include <variant>
 
-#include "job.hpp"
+#include "../jobs/job.hpp"
 #include "messagequeue.hpp"
 
 // Forward declaration to avoid circular dependency
