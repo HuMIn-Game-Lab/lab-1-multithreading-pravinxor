@@ -2,27 +2,19 @@
 #define PARSINGJOB_HPP
 
 #include "job.hpp"
+
+#include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-class ParsingJob : public Job {
+class ParsingJob : public Job<nlohmann::json> {
 private:
   std::string ingest;
 
 public:
-  struct Error {
-    std::string filename;
-    int line, column;
-    std::string message;
-  };
-
-  /// Errors mapped to the filenames where they occured
-  std::unordered_map<std::string, std::vector<ParsingJob::Error>> errors;
-  unsigned int id;
-  ParsingJob(unsigned int id, std::string ingest);
-  void execute() override;
-  void chain_next(JobSystem *system) override;
+  ParsingJob(nlohmann::json input);
+  nlohmann::json execute() override;
 };
 
 #endif

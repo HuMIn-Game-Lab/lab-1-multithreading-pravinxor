@@ -1,7 +1,4 @@
 #include "parsingjob.hpp"
-#include "job.hpp"
-#include "../system/jobsystem.hpp"
-#include "jsonjob.hpp"
 
 #include <iostream>
 #include <regex>
@@ -9,62 +6,53 @@
 #include <string>
 #include <vector>
 
-ParsingJob::ParsingJob(unsigned int id, std::string ingest) : ingest(ingest) {
-  this->id = id;
+const std::regex
+    linker_txt_expr("\\(.\\w+\\+0x\\w+\\): undefined reference to `\\w+'");
+const std::regex linker_expr("clang-\\d+: error: (.*)");
+const std::regex compiler_expr("(.*):(\\d+):(\\d+): (?:error|warning): (.*)");
+
+ParsingJob::ParsingJob(nlohmann::json input) : ingest(input["stdout"]) {}
+
+void add_error_to_file(nlohmann::json &output, const std::string &filename,
+                       const nlohmann::json &diagnostic) {
+  // Searching for the filename entry
+  auto it = std::find_if(output.begin(), output.end(),
+                         [filename](const nlohmann::json &obj) {
+                           return obj["filename"] == filename;
+                         });
+
+  if (it == output.end()) {
+    output.push_back({{"filename", filename}, {"diagnostics", {diagnostic}}});
+  } else {
+    (*it)["diagnostics"].push_back(diagnostic);
+  }
 }
 
-void ParsingJob::execute() {
-  std::regex linker_txt_expr(
-      "\\(.\\w+\\+0x\\w+\\): undefined reference to `\\w+'");
-  std::regex linker_expr("clang-\\d+: error: (.*)");
-  std::regex compiler_expr("(.*):(\\d+):(\\d+): (?:error|warning): (.*)");
-
-  std::istringstream ess(this->ingest);
+nlohmann::json ParsingJob::execute() {
+  nlohmann::json output;
 
   std::string line;
-  std::string linker_errs;
+  std::string linker_files;
+
+  std::istringstream ess(this->ingest);
   while (std::getline(ess, line)) {
     std::smatch match;
     if (std::regex_match(line, match, compiler_expr)) {
       // Assumed that errors will have a snippet or extra line, so wait for 2
       // passes to add error
       std::string filename = match[1];
-
-      Error error = {
-          .line = std::stoi(match[2]),
-          .column = std::stoi(match[3]),
-          .message = match[4],
-      };
-      if (!error.message.empty()) {
-        auto error_vec = this->errors.find(filename);
-        if (error_vec == this->errors.end()) {
-          this->errors.insert({filename, {}});
-          error_vec = this->errors.find(filename);
-        }
-        error_vec->second.push_back(error);
-      }
-    }
-    if (std::regex_match(line, match, linker_txt_expr)) {
-      linker_errs.append(line + '\n');
-    }
-    if (std::regex_match(line, match, linker_expr)) {
-      Error error{
-          .line = 0,
-          .column = 0,
-          .message = linker_errs,
-      };
-      std::string filename = "/dev/null";
-      auto error_vec = this->errors.find(filename);
-      if (error_vec == this->errors.end()) {
-        this->errors.insert({filename, {}});
-        error_vec = this->errors.find(filename);
-      }
-      error_vec->second.push_back(error);
+      nlohmann::json diagnostic = {{"line", std::stoi(match[2])},
+                                   {"column", std::stoi(match[3])},
+                                   {"message", match[4]}};
+      add_error_to_file(output["compiler"], filename, diagnostic);
+    } else if (std::regex_match(line, match, linker_txt_expr)) {
+      linker_files.append(line + '\n');
+    } else if (std::regex_match(line, match, linker_expr)) {
+      output["linker"] = {{"functions", linker_files},
+                          {
+                              {"error", match[1]},
+                          }};
     }
   }
-}
-
-void ParsingJob::chain_next(JobSystem *system) {
-  JSONJob *job = new JSONJob(JobSystem::NEXT_JOB_ID++, &this->errors);
-  system->enqueue(job);
+  return output;
 }

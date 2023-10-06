@@ -1,22 +1,17 @@
 #ifndef JSONJOB_HPP
 #define JSONJOB_HPP
 
-#include "job.hpp"
 #include "parsingjob.hpp"
 
 #include <nlohmann/json.hpp>
-#include <nlohmann/json_fwd.hpp>
 
-class JSONJob : public Job {
+class JSONJob : public Job<nlohmann::json> {
 private:
-  std::unordered_map<std::string, std::vector<ParsingJob::Error>> *errors;
+  nlohmann::json parsed_messages;
 
 public:
-  nlohmann::json errors_json;
-  JSONJob(
-      unsigned int id,
-      std::unordered_map<std::string, std::vector<ParsingJob::Error>> *errors);
-  void execute() override;
+  JSONJob(nlohmann::json parsed_messages);
+  nlohmann::json execute() override;
 };
 
 #endif

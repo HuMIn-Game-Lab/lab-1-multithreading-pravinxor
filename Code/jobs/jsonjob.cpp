@@ -1,24 +1,17 @@
 #include "jsonjob.hpp"
 #include "parsingjob.hpp"
-#include <algorithm>
+
 #include <fcntl.h>
-#include <fstream>
-#include <iostream>
-#include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <vector>
 
-JSONJob::JSONJob(
-    unsigned int id,
-    std::unordered_map<std::string, std::vector<ParsingJob::Error>> *errors)
-    : errors(errors) {
-  this->id = id;
-}
+JSONJob::JSONJob(nlohmann::json parsed_messages)
+    : parsed_messages(parsed_messages) {}
 
 /// Gets the 2 upper and lower surrounding lines as string pairs
-std::vector<std::string> getLines(const std::string &filename, int lineNumber) {
+std::vector<std::string> get_lines(const std::string &filename,
+                                   int lineNumber) {
   // Open the file
   int fd = open(filename.c_str(), O_RDONLY);
 
@@ -73,17 +66,14 @@ std::vector<std::string> getLines(const std::string &filename, int lineNumber) {
   return result;
 }
 
-void JSONJob::execute() {
-  for (const std::pair<const std::string, std::vector<ParsingJob::Error>>
-           &pair : *this->errors) {
-    std::string filename = pair.first;
-    for (const ParsingJob::Error &error : pair.second) {
-      nlohmann::json entry;
-      entry["line"] = error.line;
-      entry["column"] = error.column;
-      entry["message"] = error.message;
-      entry["chunk"] = getLines(filename, error.line);
-      this->errors_json[filename].push_back(entry);
+nlohmann::json JSONJob::execute() {
+  nlohmann::json output = this->parsed_messages;
+
+  for (nlohmann::json &file_errors : output["compiler"]) {
+    for (nlohmann::json &diagnostic : file_errors["diagnostics"]) {
+      diagnostic["chunk"] = get_lines(file_errors["filename"], diagnostic["line"]);
     }
   }
+
+  return output;
 }
