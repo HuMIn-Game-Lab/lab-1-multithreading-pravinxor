@@ -6,12 +6,9 @@
 #include <nlohmann/json.hpp>
 #include <string>
 class MakeJob : public Job<nlohmann::json> {
-private:
-  std::string target;
 
 public:
-  MakeJob(nlohmann::json input);
-  nlohmann::json execute() override;
+  nlohmann::json operator()(nlohmann::json target) override;
 };
 
 #endif

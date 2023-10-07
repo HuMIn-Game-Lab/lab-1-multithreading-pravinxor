@@ -1,13 +1,9 @@
 #include "jsonjob.hpp"
-#include "parsingjob.hpp"
 
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-JSONJob::JSONJob(nlohmann::json parsed_messages)
-    : parsed_messages(parsed_messages) {}
 
 /// Gets the 2 upper and lower surrounding lines as string pairs
 std::vector<std::string> get_lines(const std::string &filename,
@@ -66,12 +62,13 @@ std::vector<std::string> get_lines(const std::string &filename,
   return result;
 }
 
-nlohmann::json JSONJob::execute() {
-  nlohmann::json output = this->parsed_messages;
+nlohmann::json JSONJob::operator()(nlohmann::json parsed_messages) {
+  nlohmann::json output = parsed_messages;
 
   for (nlohmann::json &file_errors : output["compiler"]) {
     for (nlohmann::json &diagnostic : file_errors["diagnostics"]) {
-      diagnostic["chunk"] = get_lines(file_errors["filename"], diagnostic["line"]);
+      diagnostic["chunk"] =
+          get_lines(file_errors["filename"], diagnostic["line"]);
     }
   }
 

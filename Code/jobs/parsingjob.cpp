@@ -11,8 +11,6 @@ const std::regex
 const std::regex linker_expr("clang-\\d+: error: (.*)");
 const std::regex compiler_expr("(.*):(\\d+):(\\d+): (?:error|warning): (.*)");
 
-ParsingJob::ParsingJob(nlohmann::json input) : ingest(input["stdout"]) {}
-
 void add_error_to_file(nlohmann::json &output, const std::string &filename,
                        const nlohmann::json &diagnostic) {
   // Searching for the filename entry
@@ -28,13 +26,15 @@ void add_error_to_file(nlohmann::json &output, const std::string &filename,
   }
 }
 
-nlohmann::json ParsingJob::execute() {
+nlohmann::json ParsingJob::operator()(nlohmann::json ingest) {
   nlohmann::json output;
+
+  std::string stdout = ingest["stdout"];
 
   std::string line;
   std::string linker_files;
 
-  std::istringstream ess(this->ingest);
+  std::istringstream ess(stdout);
   while (std::getline(ess, line)) {
     std::smatch match;
     if (std::regex_match(line, match, compiler_expr)) {

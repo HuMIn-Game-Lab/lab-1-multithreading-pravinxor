@@ -10,7 +10,7 @@ template <typename T> class Job {
 
 public:
   /// Execute() function, which is ran on Slave threads. This is run first
-  virtual T execute() = 0;
+  virtual T operator()(T) = 0;
 };
 
 #endif

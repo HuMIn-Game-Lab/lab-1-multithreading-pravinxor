@@ -1,17 +1,12 @@
 #ifndef JSONJOB_HPP
 #define JSONJOB_HPP
 
-#include "parsingjob.hpp"
-
+#include "job.hpp"
 #include <nlohmann/json.hpp>
 
 class JSONJob : public Job<nlohmann::json> {
-private:
-  nlohmann::json parsed_messages;
-
 public:
-  JSONJob(nlohmann::json parsed_messages);
-  nlohmann::json execute() override;
+  nlohmann::json operator()(nlohmann::json parsed_messages) override;
 };
 
 #endif

@@ -9,12 +9,9 @@
 #include <vector>
 
 class ParsingJob : public Job<nlohmann::json> {
-private:
-  std::string ingest;
 
 public:
-  ParsingJob(nlohmann::json input);
-  nlohmann::json execute() override;
+  nlohmann::json operator()(nlohmann::json ingest) override;
 };
 
 #endif

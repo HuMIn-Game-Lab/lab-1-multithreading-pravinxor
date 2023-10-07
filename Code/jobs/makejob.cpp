@@ -6,13 +6,12 @@
 #include <nlohmann/json_fwd.hpp>
 #include <sstream>
 
-MakeJob::MakeJob(nlohmann::json input) { this->target = input["target"]; }
-
-nlohmann::json MakeJob::execute() {
+nlohmann::json MakeJob::operator()(nlohmann::json input) {
+  std::string target = input["target"];
   nlohmann::json status;
   std::string stdout;
 
-  std::string command = "make " + this->target + " 2>&1";
+  std::string command = "make " + target + " 2>&1";
   FILE *pipe = popen(command.c_str(), "r");
 
   if (pipe) {
