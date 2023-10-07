@@ -1,27 +1,26 @@
-name: GitHub Classroom Workflow
+# name: GitHub Classroom Workflow
 
-on: [push]
+# on: [push]
 
-permissions:
-  checks: write
-  actions: read
-  contents: read
+# permissions:
+#   checks: write
+#   actions: read
+#   contents: read
 
-jobs:
-  build:
-    name: Autograding
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
+# jobs:
+#   build:
+#     name: Autograding
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
       
-      - name: Install dependencies
-        run: sudo apt-get install nlohmann-json3-dev
+#       - name: Install dependencies
+#         run: sudo apt-get install nlohmann-json3-dev
 
-      - name: Install demo dependencies
-        run: sudo apt-get install jq
+#       - name: Install demo dependencies
+#         run: sudo apt-get install jq
       
-      - uses: education/autograding@v1
+#       - uses: education/autograding@v1
 
-      - name: Run demo
-        run: ./system demo | jq --color-output
-      
+#       - name: Run demo
+#         run: ./system demo | jq --color-output
