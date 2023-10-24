@@ -4,8 +4,8 @@
 #include "job.hpp"
 #include "parsingjob.hpp"
 
-#include <nlohmann/json.hpp>
-#include <nlohmann/json_fwd.hpp>
+#include "json.hpp"
+#include "json_fwd.hpp"
 
 class JSONJob : public Job {
 private:
